@@ -1,0 +1,27 @@
+{
+  "name": "entertainmentsearch",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "dependencies": {
+    "cors": "^2.8.4",
+    "express": "^4.16.3",
+    "request": "^2.85.0",
+    "url": "^0.11.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benben1026/EntertainmentSearch.git"
+  },
+  "author": "Wei",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/benben1026/EntertainmentSearch/issues"
+  },
+  "homepage": "https://github.com/benben1026/EntertainmentSearch#readme"
+}
