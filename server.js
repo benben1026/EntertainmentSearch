@@ -91,7 +91,7 @@ app.get('/search', function(req, res){
 })
 
 
-if (process.env.API_KEY == 'undefined'){
+if (!process.env.API_KEY){
 	console.log("API KEY not set");
 }else{
 	app.listen(port, () => console.log('Server listening on port ' + port))
