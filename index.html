@@ -2,6 +2,7 @@
 <html>
 <head>
 	<title>CS571 HW8</title>
+	<meta charset="utf-8">
 	<script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="style.css">
@@ -53,55 +54,100 @@
 				</div>
 			</div>
 	</div>
-	<!-- <div class="col-md-8 col-sm-12">
-		<form class="form-horizontal">
-			<div class="form-group">
-				<label for="keyword" class="col-md-2 col-sm-2 control-label">Keyword</label>
-				<div class="col-md-6 col-sm-8">
-					<input type="email" class="form-control" id="keyword" placeholder="Email">
+</div>
+<div class="row">
+	<div class="col-md-8 col-md-offset-2">
+		<table class="table" id="search-result">
+			<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>
+		</table>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-8 col-md-offset-2">
+		<ul class="nav nav-tabs" style="padding-left: 60%">
+			<li role="presentation" class="active"><a>Info</a></li>
+			<li role="presentation"><a>Photos</a></li>
+			<li role="presentation"><a>Map</a></li>
+			<li role="presentation"><a>Reviews</a></li>
+		</ul>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-md-10 col-md-offset-1">
+		<table class="table" id="info"></table>
+		<div id="photo">
+			<div class="col-md-3 photo-container"><img class="thumbnail" style="width: 100%" src="http://www.baidu.com/img/bd_logo1.png?where=super"><img class="thumbnail" style="width: 100%" src="http://www.baidu.com/img/bd_logo1.png?where=super"></div>
+			<div class="col-md-3 photo-container"><img class="thumbnail" style="width: 100%" src="http://images5.fanpop.com/image/photos/31300000/beautiful-heart-pic-beautiful-pictures-31395948-333-500.jpg"><img class="thumbnail" style="width: 100%" src="http://www.baidu.com/img/bd_logo1.png?where=super"></div>
+			<div class="col-md-3 photo-container"><img class="thumbnail" style="width: 100%" src="http://www.baidu.com/img/bd_logo1.png?where=super"></div>
+			<div class="col-md-3 photo-container"><img class="thumbnail" style="width: 100%" src="http://www.baidu.com/img/bd_logo1.png?where=super"></div>
+		</div>
+		<div class="col-md-12">
+			<div class="row">
+				<div class="col-md-4 form-group">
+					<label for="map-from">From</label>
+					<input type="text" class="form-control" id="map-from">
+				</div>
+				<div class="col-md-4 form-group">
+					<label for="map-to">To</label>
+					<input type="text" class="form-control" id="map-to" disabled="disabled">
+				</div>
+				<div class="col-md-2 form-group">
+					<label for="travel-model">Travel Model</label>
+					<select id="travel-mode" class="form-control">
+						<option value="DRIVING">Driving</option>
+						<option value="BICYCLING">Bicycling</option>
+						<option value="TRANSIT">Transit</option>
+						<option value="WALKING">Walking</option>
+					</select>
+				</div>
+				<div class="col-md-2 form-group">
+					<button id="get-direction-btn" class="btn btn-primary" onclick="javascript:void(0)">Get Directions</button>
 				</div>
 			</div>
-			<div class="form-group">
-				<label for="category" class="col-md-2 col-sm-2 control-label">Category</label>
-				<div class="col-md-6 col-sm-8">
-					<select class="form-control" id="category">
-						<option>asdf</option>
-						<option>asdf</option>
-						<option>asdf</option>
-						<option>asdf</option>
+			<div class="row">
+				<div class="col-md-1">
+					<img src="http://cs-server.usc.edu:45678/hw/hw8/images/Map.png" style="width: 50%">
+					<img src="http://cs-server.usc.edu:45678/hw/hw8/images/Pegman.png" style="width: 50%">
+				</div>
+			</div>
+			<div class="row">
+				<div id="map" class="col-md-12" style="width: 100%; height: 500px;"></div>
+			</div>
+		</div>
+		<div id="review">
+			<div class="row">
+				<div class="col-md-2">
+					<select class="form-control">
+						<option>Google Reviews</option>
+						<option>Yelp Reviews</option>
+					</select>
+				</div>
+				<div class="col-md-2">
+					<select class="form-control">
+						<option>Default Order</option>
+						<option>Highest Rating</option>
+						<option>Lowest Rating</option>
+						<option>Most Recent</option>
+						<option>Least Recent</option>
 					</select>
 				</div>
 			</div>
-		</form>
-	</div> -->
+			<div class="row">
+				<ul id="google-reviews" class="list-group">
+					
+				</ul>
+			</div>
+			<div class="row">
+				<ul id="yelp-reviews" class="list-group">
+					
+				</ul>
+			</div>
+		</div>
+	</div>
 </div>
-<!-- <form class="form-horizontal">
-  <div class="form-group">
-    <label for="keyword" class="col-sm-2 control-label">Keyword</label>
-    <div class="col-sm-10">
-      <input type="email" class="form-control" id="keyword" placeholder="Email">
-    </div>
-  </div>
-  <div class="form-group">
-    <label for="inputPassword3" class="col-sm-2 control-label">Password</label>
-    <div class="col-sm-10">
-      <input type="password" class="form-control" id="inputPassword3" placeholder="Password">
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="col-sm-offset-2 col-sm-10">
-      <div class="checkbox">
-        <label>
-          <input type="checkbox"> Remember me
-        </label>
-      </div>
-    </div>
-  </div>
-  <div class="form-group">
-    <div class="col-sm-offset-2 col-sm-10">
-      <button type="submit" class="btn btn-default">Sign in</button>
-    </div>
-  </div>
-</form> -->
 </body>
+<script async defer
+    	src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB3ih0hTutvhV5mEQd4cKrnopfB4pnqQ-U&callback=initMap&libraries=places">
+</script>
 </html>
