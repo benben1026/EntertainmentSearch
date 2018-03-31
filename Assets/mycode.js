@@ -59,6 +59,8 @@ function set_photo(data){
 }
 
 function set_map(data){
+	if (marker)
+		marker.setMap(null);
 	$('#map-to').val(data.name);
 	$('#map-from').val("Your location");
 	destLat = data['geometry']['location']['lat']();
@@ -71,6 +73,15 @@ function set_map(data){
 		title: name
 	});
 	map.setCenter(latLng);
+	var panorama = new google.maps.StreetViewPanorama(
+		document.getElementById("street-view"), {
+			position: {lat: parseFloat(destLat), lng: parseFloat(destLng)},
+			pov: {
+				heading: 34,
+				pitch: 10
+			}
+		})
+	map.setStreetView(panorama);
 }
 
 function getDirection(){
@@ -95,18 +106,25 @@ function getDirection(){
 }
 
 function calculateAndDisplayRoute(){
-	marker.setMap(null);
+	if (marker)
+		marker.setMap(null);
 	directionsService.route({
 		origin: {lat: parseFloat(fromLocationLat), lng: parseFloat(fromLocationLng)}, 
 		destination: {lat: parseFloat(destLat), lng: parseFloat(destLng)},
-		travelMode: google.maps.TravelMode[$('#travel-mode').val()]
+		travelMode: google.maps.TravelMode[$('#travel-mode').val()],
+		provideRouteAlternatives: true
 	}, function(response, status){
 		if (status == 'OK') {
 			directionsDisplay.setDirections(response);
+			directionsDisplay.setPanel(document.getElementById("routeSteps"))
 		} else {
 			window.alert('Directions request failed due to ' + status);
 		}
 	})
+}
+
+function setStreetView(){
+	map.getStreetView().setPosition({lat: parseFloat(destLat), lng: parseFloat(destLng)})
 }
 
 function set_google_reviews(data){
@@ -169,6 +187,21 @@ function set_yelp_reviews(data){
 	})
 }
 
+function toggleIcon(){
+	if (googleMapStatus == 1){
+		$('#google-map-toggle-icon').attr("src", "http://cs-server.usc.edu:45678/hw/hw8/images/Pegman.png");
+		setStreetView();
+		$('#map').hide();
+		$('#street-view').show();
+		googleMapStatus = 0;
+	} else {
+		$('#google-map-toggle-icon').attr("src", "http://cs-server.usc.edu:45678/hw/hw8/images/Map.png");
+		$('#street-view').hide();
+		$('#map').show();
+		googleMapStatus = 1;
+	}
+}
+
 function init(){
 	$.ajax({
 		url: "http://ip-api.com/json",
@@ -221,6 +254,8 @@ function init(){
 		getDirection();
 	})
 	service = new google.maps.places.PlacesService(map);
+	googleMapStatus = 1;
+	marker = null;
 }
 
 function initMap(){
@@ -229,7 +264,8 @@ function initMap(){
 	directionsService = new google.maps.DirectionsService;
 	map = new google.maps.Map(document.getElementById('map'), {
 		zoom: 14,
-		center: {lat: 37.77, lng: -122.447}
+		center: {lat: 37.77, lng: -122.447},
+		//streetViewControl: false,
 	});
 	directionsDisplay.setMap(map);
 }
