@@ -6,6 +6,7 @@ function set_place_detail(place, status){
 	if (status == google.maps.places.PlacesServiceStatus.OK){
 		set_info(place);
 		set_map(place);
+		setStreetView();
 		set_photo(place);
 		set_google_reviews(place);
 		set_yelp_reviews(place);
@@ -41,7 +42,7 @@ function set_info(data){
 }
 
 function set_photo(data){
-	if (!data.photos && data.photos.length > 0){
+	if ('photos' in data && data.photos.length > 0){
 		return;
 	}
 	$('.photo-container').html('');
@@ -73,15 +74,15 @@ function set_map(data){
 		title: name
 	});
 	map.setCenter(latLng);
-	var panorama = new google.maps.StreetViewPanorama(
-		document.getElementById("street-view"), {
-			position: {lat: parseFloat(destLat), lng: parseFloat(destLng)},
-			pov: {
-				heading: 34,
-				pitch: 10
-			}
-		})
-	map.setStreetView(panorama);
+	// panorama = new google.maps.StreetViewPanorama(
+	// 	document.getElementById("street-view"), {
+	// 		position: {lat: parseFloat(destLat), lng: parseFloat(destLng)},
+	// 		pov: {
+	// 			heading: 34,
+	// 			pitch: 10
+	// 		}
+	// 	})
+	//map.setStreetView(panorama);
 }
 
 function getDirection(){
@@ -124,7 +125,18 @@ function calculateAndDisplayRoute(){
 }
 
 function setStreetView(){
-	map.getStreetView().setPosition({lat: parseFloat(destLat), lng: parseFloat(destLng)})
+	//map.getStreetView().setPosition({lat: parseFloat(destLat), lng: parseFloat(destLng)})
+	//panorama.setPosition({lat: parseFloat(destLat), lng: parseFloat(destLng)});
+	
+	panorama = new google.maps.StreetViewPanorama(
+		document.getElementById("street-view"), {
+			position: {lat: parseFloat(destLat), lng: parseFloat(destLng)},
+			pov: {
+				heading: 34,
+				pitch: 10
+			}
+		})
+	
 }
 
 function set_google_reviews(data){
@@ -190,14 +202,18 @@ function set_yelp_reviews(data){
 function toggleIcon(){
 	if (googleMapStatus == 1){
 		$('#google-map-toggle-icon').attr("src", "http://cs-server.usc.edu:45678/hw/hw8/images/Pegman.png");
-		setStreetView();
+		// $('#map').height(0)
+		// $('#street-view').height(500)
 		$('#map').hide();
 		$('#street-view').show();
+		setStreetView();
 		googleMapStatus = 0;
 	} else {
 		$('#google-map-toggle-icon').attr("src", "http://cs-server.usc.edu:45678/hw/hw8/images/Map.png");
 		$('#street-view').hide();
 		$('#map').show();
+		// $('#map').height(500)
+		// $('#street-view').height(0)
 		googleMapStatus = 1;
 	}
 }
