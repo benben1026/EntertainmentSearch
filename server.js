@@ -4,14 +4,18 @@ const cors = require('cors')
 const url = require('url')
 const path = require('path')
 const querystring = require('querystring');
+const apikey = require('./Assets/apikey')
 
 const app = express()
-const port = 8888
+const port = 8080
 
 app.use(cors())
 
+// console.log(apikey.googleKey());
+// console.log(apikey.yelpKey());
+
 function geocode(callback, location){
-    request('https://maps.googleapis.com/maps/api/geocode/json?address=' + location + '&key=' + process.env.API_KEY, function(error, response, body) {
+    request('https://maps.googleapis.com/maps/api/geocode/json?address=' + location + '&key=' + apikey.googleKey(), function(error, response, body) {
         if (!error && response.statusCode == 200) {
             var result = JSON.parse(body);
             result = {"lat": result['results'][0]['geometry']['location']['lat'], 
@@ -35,7 +39,7 @@ app.get('/geocode', function(req, res){
 
 function nearbysearch(callback, lat, lng, radius, type, keyword){
 	var request_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" 
-		+ lat + "," + lng + "&radius=" + radius + "&type=" + type + "&keyword=" + keyword + "&key=" + process.env.API_KEY;
+		+ lat + "," + lng + "&radius=" + radius + "&type=" + type + "&keyword=" + keyword + "&key=" + apikey.googleKey();
 	request(request_url, function(error, response, body){
 		if (!error && response.statusCode == 200) {
             var result = JSON.parse(body);
@@ -56,7 +60,7 @@ app.get('/nearbysearch', function(req, res){
 })
 
 function nextPage(callback, token){
-	var request_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=" + token + "&key=" + process.env.API_KEY;
+	var request_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=" + token + "&key=" + apikey.googleKey();
 	request(request_url, function(error, response, body){
 		if (!error && response.statusCode == 200) {
             var result = JSON.parse(body);
@@ -125,7 +129,7 @@ app.get('/search', function(req, res){
 })
 
 function placedetail(callback, place_id){
-	var request_url = "https://maps.googleapis.com/maps/api/place/details/json?placeid=" + place_id + "&key=" + process.env.API_KEY;
+	var request_url = "https://maps.googleapis.com/maps/api/place/details/json?placeid=" + place_id + "&key=" + apikey.googleKey();
 	request(request_url, function(error, response, body){
 		if (!error && response.statusCode == 200){
 			var result = JSON.parse(body);
@@ -163,7 +167,7 @@ function yelpGetReviews(callback, id){
 	request({
 		url: "https://api.yelp.com/v3/businesses/" + id + "/reviews",
 		headers: {
-			"Authorization": "Bearer " + process.env.YELP_API_KEY
+			"Authorization": "Bearer " + apikey.yelpKey()
 		}},
 		function(error, response, body){
 			if (!error && response.statusCode == 200){
@@ -181,7 +185,7 @@ function yelpGetId(callback, input_para){
 	request({
 		url: "https://api.yelp.com/v3/businesses/matches/best?" + querystring.stringify(input_para),
 		headers: {
-			"Authorization": "Bearer " + process.env.YELP_API_KEY
+			"Authorization": "Bearer " + apikey.yelpKey()
 		}},
 		function(error, response, body){
 			if (!error && response.statusCode == 200){
@@ -196,7 +200,7 @@ function yelpGetId(callback, input_para){
 }
 
 app.get('/getyelpreviews', function(req, res){
-	if (!process.env.YELP_API_KEY){
+	if (!apikey.yelpKey()){
 		res.send(JSON.stringify({status: 'ERROR', msg:'API_KEY_NOT_SET'}));
 		return;
 	}
@@ -236,11 +240,4 @@ app.get('/', function(req, res){
 app.use(express.static(__dirname + '/Assets/'));
 
 
-if (!process.env.API_KEY){
-	console.log("API KEY not set");
-}else{
-	if (!process.env.YELP_API_KEY){
-		console.log("YELP API KEY not set");
-	}
-	app.listen(port, () => console.log('Server listening on port ' + port))
-}
+app.listen(port, () => console.log('Server listening on port ' + port))
