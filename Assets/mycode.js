@@ -218,6 +218,70 @@ function toggleIcon(){
 	}
 }
 
+function renderSearchResult(data){
+	var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
+	for (var i in data['results']){
+		result += '<tr><td>' + (parseInt(i) + 1) + '</td>' 
+			+ '<td><img src=\"' + data['results'][i]['icon'] + '\" /></td>' 
+			+ '<td>' + data['results'][i]['name'] + '</td>' 
+			+ '<td>' + data['results'][i]['vicinity'] + '</td>' 
+			+ '<td><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span></button></td>' 
+			+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + data['results'][i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
+	}
+	return result;
+}
+
+function nextPage(){
+	if (pageIndex < pageData.length - 1){
+		$('#search-result').html('');
+		pageIndex += 1;
+		$('#search-result').append(renderSearchResult(pageData[pageIndex]));
+		renderPagination();
+	} else if('next_page_token' in pageData[pageIndex]){
+		$.ajax({
+			url: DOMAIN + "/nextpage?pagetoken=" + pageData[pageIndex].next_page_token,
+			dataType: 'json',
+			success: function(data){
+				if (data.status == "OK"){
+					pageData.push(data)
+					$('#search-result').html('');
+					pageIndex += 1;
+					$('#search-result').append(renderSearchResult(data));
+					renderPagination();
+				}
+			},
+			error: function(){
+				console.log("Fail to get next page");
+			}
+		})
+	} else {
+		console.log("No next page");
+	}
+}
+
+function previousPage(){
+	if (pageIndex > 0){
+		$('#search-result').html('');
+		pageIndex -= 1;
+		$('#search-result').append(renderSearchResult(pageData[pageIndex]));
+		renderPagination();
+	} else {
+		console.log("No previous page");
+	}
+
+}
+
+function renderPagination(){
+	result = ""
+	if (pageIndex > 0){
+		result += '<button class="btn btn-default" onclick="previousPage()">Previous</button>';
+	}
+	if (pageIndex < pageData.length - 1 || 'next_page_token' in pageData[pageIndex]){
+		result += '<button class="btn btn-default" onclick="nextPage()">Next</button>';
+	}
+	$('#pagination').html(result);
+}
+
 function init(){
 	$.ajax({
 		url: "http://ip-api.com/json",
@@ -234,6 +298,8 @@ function init(){
 
 	$("#search-form").submit(function(event){
 		event.preventDefault();
+		pageData = [];
+		pageIndex = -1;
 		var url = DOMAIN + "/search?keyword=" + $('#keyword').val() 
 				+ "&radius=" + parseInt($('#distance').val()) * 1609.34 
 				+ "&from=" + ($('[name="from"]')[0].checked ? "here" : "customized")
@@ -249,14 +315,11 @@ function init(){
 			success: function(data){
 				if (data['status'] == 'OK'){
 					console.log(data);
-					for (var i in data['data']){
-						$('#search-result tr:last').after('<tr><td>' + (parseInt(i) + 1) + '</td>' 
-							+ '<td><img src=\"' + data['data'][i]['icon'] + '\" /></td>' 
-							+ '<td>' + data['data'][i]['name'] + '</td>' 
-							+ '<td>' + data['data'][i]['address'] + '</td>' 
-							+ '<td><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span></button></td>' 
-							+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + data['data'][i]['id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>')
-					}
+					$('#search-result').html('');
+					$('#search-result').append(renderSearchResult(data))
+					pageData.push(data);
+					pageIndex = 0;
+					renderPagination();
 				}
 			},
 			error: function(){

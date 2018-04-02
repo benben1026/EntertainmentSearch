@@ -55,6 +55,30 @@ app.get('/nearbysearch', function(req, res){
     }, qdata.lat, qdata.lng, qdata.radius, qdata.type, qdata.keyword);
 })
 
+function nextPage(callback, token){
+	var request_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?pagetoken=" + token + "&key=" + process.env.API_KEY;
+	request(request_url, function(error, response, body){
+		if (!error && response.statusCode == 200) {
+            var result = JSON.parse(body);
+            return callback(null, result);
+        } else {            
+            return callback(error, null);;
+        }
+	})
+}
+
+app.get('/nextpage', function(req, res){
+	var qdata = url.parse(req.url, true).query;
+	if (!'pagetoken' in qdata){
+		res.send(JSON.stringify({status: "INVALID_PARAMETER"}));
+		return;
+	}
+	nextPage(function(err, data){
+		if(err) return res.send(err);       
+        res.send(JSON.stringify(data));
+	}, qdata.pagetoken)
+})
+
 function nearbysearch_callback(err, data){
 	if(err) {
     	return JSON.stringify({"status": "ERROR", "msg": err});
@@ -75,7 +99,11 @@ app.get('/search', function(req, res){
 	var qdata = url.parse(req.url, true).query;
 	if (qdata.from == "here"){
 		nearbysearch(function(err, data){ 
-	        res.send(nearbysearch_callback(err, data))
+	        //res.send(nearbysearch_callback(err, data))
+	        if(err) {
+		    	return JSON.stringify({"status": "ERROR", "msg": err});
+		    }
+		    res.send(JSON.stringify(data));
 	    }, qdata.lat, qdata.lng, qdata.radius, qdata.type, qdata.keyword);
 	} else if(qdata.from == "customized"){
 		geocode(function(err, data){ 
@@ -84,7 +112,11 @@ app.get('/search', function(req, res){
 	        	return;
 	        }
 	        nearbysearch(function(err, data){
-	        	res.send(nearbysearch_callback(err, data))
+	        	//res.send(nearbysearch_callback(err, data))
+	        	if(err) {
+			    	return JSON.stringify({"status": "ERROR", "msg": err});
+			    }
+			    res.send(JSON.stringify(data));
 	        }, data.lat, data.lng, qdata.radius, qdata.type, qdata.keyword)
 	    }, qdata.location);
 	} else {
