@@ -238,7 +238,7 @@ function init(){
 				+ "&radius=" + parseInt($('#distance').val()) * 1609.34 
 				+ "&from=" + ($('[name="from"]')[0].checked ? "here" : "customized")
 				+ "&category=" + $('#category').val()
-				+ "&location=" + $('#location').val()
+				+ "&location=" + $('#location-from').val()
 				+ "&lat=" + client_lat
 				+ "&lng=" + client_lng;
 		console.log(url)
@@ -272,6 +272,40 @@ function init(){
 	service = new google.maps.places.PlacesService(map);
 	googleMapStatus = 1;
 	marker = null;
+	initAutoComplete();
+}
+
+function geolocate() {
+	if (navigator.geolocation) {
+		navigator.geolocation.getCurrentPosition(function(position) {
+			var geolocation = {
+				lat: position.coords.latitude,
+				lng: position.coords.longitude
+			};
+			var circle = new google.maps.Circle({
+				center: geolocation,
+				radius: position.coords.accuracy
+			});
+			autocompleteMap.setBounds(circle.getBounds());
+		});
+	}
+}
+
+function fillInAddress(){
+	return;
+}
+
+function initAutoComplete(){
+	autocompleteMap = new google.maps.places.Autocomplete(
+        (document.getElementById('map-from')),
+        {types: ['geocode']}
+    );
+    autocompleteMap.addListener('place_changed', fillInAddress);
+    autocompleteSearch = new google.maps.places.Autocomplete(
+        (document.getElementById('location-from')),
+        {types: ['geocode']}
+    );
+    autocompleteSearch.addListener('place_changed', fillInAddress);
 }
 
 function initMap(){
