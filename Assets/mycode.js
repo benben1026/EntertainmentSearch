@@ -2,8 +2,6 @@
 const DOMAIN = ""
 
 function set_place_detail(place, status){
-	// console.log(status)
-	// console.log(place)
 	if (status == google.maps.places.PlacesServiceStatus.OK){
 		set_info(place);
 		set_map(place);
@@ -11,22 +9,25 @@ function set_place_detail(place, status){
 		set_photo(place);
 		set_google_reviews(place);
 		set_yelp_reviews(place);
+		toggleDetailInfo(1);
+		toggleListDetail('detail');
+		$('#detail-btn').removeAttr('disabled');
 	}
 }
 
 function set_info(data){
-	$('#info').html('')
-	$('#info').append('<tr><td>Address</td><td>' + data['adr_address'] + '</td></tr>');
+	$('#info').html('<tbody></tbody');
+	$('#info tbody').append('<tr><td>Address</td><td>' + data['adr_address'] + '</td></tr>');
 	if (data['international_phone_number'])
-		$('#info').append('<tr><td>Phone Number</td><td>' + data['international_phone_number'] + '</td></tr>');
+		$('#info tbody').append('<tr><td>Phone Number</td><td>' + data['international_phone_number'] + '</td></tr>');
 	if (data['price_level'])
-		$('#info').append('<tr><td>Price Level</td><td>' + data['price_level'] + '</td></tr>');
+		$('#info tbody').append('<tr><td>Price Level</td><td>' + data['price_level'] + '</td></tr>');
 	if (data['rating'])
-		$('#info').append('<tr><td>Rating</td><td>' + data['rating'] + '</td></tr>');
+		$('#info tbody').append('<tr><td>Rating</td><td>' + data['rating'] + '</td></tr>');
 	if (data['url'])
-		$('#info').append('<tr><td>Google Page</td><td><a target="__blank" href="' + data['url'] + '">' + data['url'] + '</a></td></tr>');
+		$('#info tbody').append('<tr><td>Google Page</td><td><a target="__blank" href="' + data['url'] + '">' + data['url'] + '</a></td></tr>');
 	if (data['website'])
-		$('#info').append('<tr><td>Website</td><td><a target="__blank" href="' + data['website'] + '">' + data['website'] + '</a></td></tr>');
+		$('#info tbody').append('<tr><td>Website</td><td><a target="__blank" href="' + data['website'] + '">' + data['website'] + '</a></td></tr>');
 	if (data['opening_hours']){
 		var innerhtml = "";
 		var currentdate = new Date(Date.now() + (new Date().getTimezoneOffset() * 60000) - parseInt(data['utc_offset']) * 60000) ;
@@ -37,7 +38,7 @@ function set_info(data){
 			innerhtml += "Closed"
 		}
 		innerhtml += "&nbsp;&nbsp;<a>Daily open hours</a>"
-		$('#info').append('<tr><td>Hours</td><td>' + innerhtml + '</td></tr>');
+		$('#info tbody').append('<tr><td>Hours</td><td>' + innerhtml + '</td></tr>');
 	}
 
 }
@@ -220,12 +221,14 @@ function toggleIcon(){
 }
 
 function renderSearchResult(){
+	toggleListDetail('list')
 	$('#results-btn').attr("class", "btn btn-primary");
 	$('#favorite-btn').attr("class", "btn btn-default");
 	if (typeof pageData == 'undefined'){
 		$('.result-data').remove()
 		return;
 	}
+
 	//var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
 	$('.result-data').remove()
 	var tmp = pageData[pageIndex]['results']
@@ -287,7 +290,7 @@ function previousPage(){
 }
 
 function renderPagination(){
-	result = ""
+	var result = "";
 	if (pageIndex > 0){
 		result += '<button class="btn btn-default" onclick="previousPage()">Previous</button>';
 	}
@@ -303,7 +306,7 @@ function setFavorite(index){
 	renderSearchResult();
 }
 
-function removeFavorite(id, callback){
+function removeFavorite(id, callback, page=1){
 	for (var i in favoriteRecord){
 		if (favoriteRecord[i]['place_id'] == id){
 			favoriteRecord.splice(i, 1);
@@ -312,24 +315,65 @@ function removeFavorite(id, callback){
 	}
 	//favoriteRecord.splice(index, 1);
 	localStorage.setItem("favorite", JSON.stringify(favoriteRecord));
-	callback();
+	callback(page);
 }
 
-function renderFavoriteTab(){
+function renderFavoriteTab(page=1){
+	toggleListDetail('list');
+	if (page > parseInt(Math.ceil(favoriteRecord.length / 20))){
+		page = parseInt(Math.ceil(favoriteRecord.length / 20))
+	}
 	$('#results-btn').attr("class", "btn btn-default");
 	$('#favorite-btn').attr("class", "btn btn-primary");
 	$('.result-data').remove()
-	//var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
-	for (var i in favoriteRecord){
-		var row = '<tr class="result-data"><td>' + (parseInt(i) + 1) + '</td>' 
+	
+	for (var i = 20 * (page - 1); i < favoriteRecord.length && i < 20 * page; i++){
+		var row = '<tr class="result-data"><td>' + (i + 1) + '</td>' 
 			+ '<td><img class="result-category-icon" src=\"' + favoriteRecord[i]['icon'] + '\" /></td>' 
 			+ '<td>' + favoriteRecord[i]['name'] + '</td>' 
 			+ '<td>' + favoriteRecord[i]['vicinity'] + '</td>' 
-			+ '<td><button type="button" onclick="javascript:removeFavorite(\'' + favoriteRecord[i]['place_id'] + '\', renderFavoriteTab)" class="btn btn-default"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>' 
+			+ '<td><button type="button" onclick="javascript:removeFavorite(\'' + favoriteRecord[i]['place_id'] + '\', renderFavoriteTab, ' + page + ')" class="btn btn-default"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>' 
 			+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + favoriteRecord[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
 		$('#search-result tr:last').after(row)
 	}
-	//$('#search-result').html(result);
+	var result = '';
+	if (page > 1){
+		result += '<button class="btn btn-default" onclick="renderFavoriteTab(' + (page - 1) +')">Previous</button>';
+	}
+	if (page < parseInt(Math.ceil(favoriteRecord.length / 20))){
+		result += '<button class="btn btn-default" onclick="renderFavoriteTab(' + (page + 1) +')">Next</button>';
+	}
+	$('#pagination').html(result);
+}
+
+function toggleListDetail(status){
+	if (status == 'detail'){
+		$('.list').hide();
+		$('.detail').show();
+	} else if(status == 'list'){
+		$('.list').show();
+		$('.detail').hide();
+	}
+}
+
+function toggleDetailInfo(tag){
+	$('.detail-tag').hide();
+	$('ul.nav-tabs li').attr('class', '');
+	$('ul.nav-tabs li:nth-child(' + tag + ')').attr('class', 'active');
+	switch (tag){
+		case 1:
+			$('#info').show();
+			break;
+		case 2:
+			$('#photo').show();
+			break;
+		case 3:
+			$('#map-container').show();
+			break;
+		case 4:
+			$('#review').show();
+			break;
+	}
 }
 
 function init(){

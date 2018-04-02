@@ -67,38 +67,41 @@
 		<a href="javascript:renderFavoriteTab()"><div id="favorite-btn" class="btn btn-default"">Favorites</div></a>
 	</div>
 </div>
-<div class="row">
+<div class="row list" style="text-align: right">
+	<div class="col-md-8 col-md-offset-2"><button id="detail-btn" class="btn btn-default btn-sm" onclick="toggleListDetail('detail'); return false;" disabled="">Detail ></button></div>
+</div>
+<div class="row detail" style="text-align: left">
+	<div class="col-md-8 col-md-offset-2"><button class="btn btn-default btn-sm" onclick="toggleListDetail('list'); return false;">< List</button></div>
+</div>
+<div class="row list">
 	<div class="col-md-8 col-md-offset-2">
 		<table class="table" id="search-result">
 			<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>
-			<!-- <tr><td>1</td><td>asdf</td><td>asdf</td><td>asdf</td><td>asdf</td><td>asdf</td></tr>
-			<tr><td>1</td><td>asdf</td><td>asdf</td><td>asdf</td><td>asdf</td><td>asdf</td></tr>
-			<tr><td>1</td><td>asdf</td><td>asdf</td><td>asdf</td><td>asdf</td><td>asdf</td></tr> -->
 		</table>
 		<div id="pagination"></div>
 	</div>
 </div>
-<div class="row">
+<div class="row detail">
 	<div class="col-md-8 col-md-offset-2">
 		<ul class="nav nav-tabs" style="padding-left: 60%">
-			<li role="presentation" class="active"><a>Info</a></li>
-			<li role="presentation"><a>Photos</a></li>
-			<li role="presentation"><a>Map</a></li>
-			<li role="presentation"><a>Reviews</a></li>
+			<li role="presentation" class="active"><a href="javascript:toggleDetailInfo(1)">Info</a></li>
+			<li role="presentation"><a href="javascript:toggleDetailInfo(2)">Photos</a></li>
+			<li role="presentation"><a href="javascript:toggleDetailInfo(3)">Map</a></li>
+			<li role="presentation"><a href="javascript:toggleDetailInfo(4)">Reviews</a></li>
 		</ul>
 	</div>
 </div>
 
-<div class="row">
-	<div class="col-md-10 col-md-offset-1">
-		<table class="table" id="info"></table>
-		<div id="photo">
+<div class="row detail">
+	<div class="col-md-8 col-md-offset-2">
+		<table class="table detail-tag" id="info"></table>
+		<div id="photo" class="detail-tag">
 			<div class="col-md-3 photo-container"></div>
 			<div class="col-md-3 photo-container"></div>
 			<div class="col-md-3 photo-container"></div>
 			<div class="col-md-3 photo-container"></div>
 		</div>
-		<div class="col-md-12">
+		<div class="col-md-12 detail-tag" id="map-container">
 			<div class="row">
 				<div class="col-md-4 form-group">
 					<label for="map-from">From</label>
@@ -138,7 +141,7 @@
 				<div id="routeSteps" class="col-md-12"></div>
 			</div>
 		</div>
-		<div id="review">
+		<div id="review" class="detail-tag">
 			<div class="row">
 				<div class="col-md-2">
 					<select class="form-control">

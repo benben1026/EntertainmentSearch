@@ -8,3 +8,11 @@
 .result-category-icon{
 	width: 25px;
 }
+
+#pagination{
+	text-align: center;
+}
+
+.detail, .list{
+	display: none;
+}
