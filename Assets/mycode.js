@@ -223,27 +223,30 @@ function renderSearchResult(){
 	$('#results-btn').attr("class", "btn btn-primary");
 	$('#favorite-btn').attr("class", "btn btn-default");
 	if (typeof pageData == 'undefined'){
-		$('#search-result').html('');
+		$('.result-data').remove()
 		return;
 	}
-	var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
+	//var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
+	$('.result-data').remove()
 	var tmp = pageData[pageIndex]['results']
 	for (var i in tmp){
 		var star = '<button type="button" onclick="javascript:setFavorite(' + i + ')" class="btn btn-default"><span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span></button>'
 		for (var j in favoriteRecord){
 			if (favoriteRecord[j]['place_id'] == tmp[i]['place_id']){
-				star = '<button type="button" onclick="javascript:removeFavorite(' + tmp[i]['place_id'] + ')" class="btn btn-default"><span class="glyphicon glyphicon-star" aria-hidden="true"></span></button>'
+				star = '<button type="button" onclick="javascript:removeFavorite(\'' + tmp[i]['place_id'] + '\', renderSearchResult)" class="btn btn-default"><span class="glyphicon glyphicon-star" aria-hidden="true"></span></button>'
 				break;
 			}
 		}
-		result += '<tr><td>' + (parseInt(i) + 1) + '</td>' 
-			+ '<td><img src=\"' + tmp[i]['icon'] + '\" /></td>' 
+		var row = '<tr class="result-data"><td>' + (parseInt(i) + 1) + '</td>' 
+			+ '<td><img class="result-category-icon" src=\"' + tmp[i]['icon'] + '\" /></td>' 
 			+ '<td>' + tmp[i]['name'] + '</td>' 
 			+ '<td>' + tmp[i]['vicinity'] + '</td>' 
 			+ '<td>' + star + '</td>' 
 			+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + tmp[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
+		$('#search-result tr:last').after(row);
 	}
-	$('#search-result').html(result);
+	// $('#search-result').html('');
+	// $('#search-result').append(result)
 }
 
 function nextPage(){
@@ -300,7 +303,7 @@ function setFavorite(index){
 	renderSearchResult();
 }
 
-function removeFavorite(id){
+function removeFavorite(id, callback){
 	for (var i in favoriteRecord){
 		if (favoriteRecord[i]['place_id'] == id){
 			favoriteRecord.splice(i, 1);
@@ -309,22 +312,24 @@ function removeFavorite(id){
 	}
 	//favoriteRecord.splice(index, 1);
 	localStorage.setItem("favorite", JSON.stringify(favoriteRecord));
-	renderFavoriteTab();
+	callback();
 }
 
 function renderFavoriteTab(){
 	$('#results-btn').attr("class", "btn btn-default");
 	$('#favorite-btn').attr("class", "btn btn-primary");
-	var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
+	$('.result-data').remove()
+	//var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
 	for (var i in favoriteRecord){
-		result += '<tr><td>' + (parseInt(i) + 1) + '</td>' 
-			+ '<td><img src=\"' + favoriteRecord[i]['icon'] + '\" /></td>' 
+		var row = '<tr class="result-data"><td>' + (parseInt(i) + 1) + '</td>' 
+			+ '<td><img class="result-category-icon" src=\"' + favoriteRecord[i]['icon'] + '\" /></td>' 
 			+ '<td>' + favoriteRecord[i]['name'] + '</td>' 
 			+ '<td>' + favoriteRecord[i]['vicinity'] + '</td>' 
-			+ '<td><button type="button" onclick="javascript:removeFavorite(\'' + favoriteRecord[i]['place_id'] + '\')" class="btn btn-default"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>' 
+			+ '<td><button type="button" onclick="javascript:removeFavorite(\'' + favoriteRecord[i]['place_id'] + '\', renderFavoriteTab)" class="btn btn-default"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>' 
 			+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + favoriteRecord[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
+		$('#search-result tr:last').after(row)
 	}
-	$('#search-result').html(result);
+	//$('#search-result').html(result);
 }
 
 function init(){
