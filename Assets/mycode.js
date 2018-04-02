@@ -1,4 +1,5 @@
-const DOMAIN = "http://localhost:8888"
+//const DOMAIN = "http://localhost:8888"
+const DOMAIN = ""
 
 function set_place_detail(place, status){
 	// console.log(status)
@@ -42,7 +43,7 @@ function set_info(data){
 }
 
 function set_photo(data){
-	if ('photos' in data && data.photos.length > 0){
+	if (!('photos' in data) || data.photos.length == 0){
 		return;
 	}
 	$('.photo-container').html('');
@@ -218,24 +219,37 @@ function toggleIcon(){
 	}
 }
 
-function renderSearchResult(data){
-	var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
-	for (var i in data['results']){
-		result += '<tr><td>' + (parseInt(i) + 1) + '</td>' 
-			+ '<td><img src=\"' + data['results'][i]['icon'] + '\" /></td>' 
-			+ '<td>' + data['results'][i]['name'] + '</td>' 
-			+ '<td>' + data['results'][i]['vicinity'] + '</td>' 
-			+ '<td><button type="button" class="btn btn-default"><span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span></button></td>' 
-			+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + data['results'][i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
+function renderSearchResult(){
+	$('#results-btn').attr("class", "btn btn-primary");
+	$('#favorite-btn').attr("class", "btn btn-default");
+	if (typeof pageData == 'undefined'){
+		$('#search-result').html('');
+		return;
 	}
-	return result;
+	var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
+	var tmp = pageData[pageIndex]['results']
+	for (var i in tmp){
+		var star = '<button type="button" onclick="javascript:setFavorite(' + i + ')" class="btn btn-default"><span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span></button>'
+		for (var j in favoriteRecord){
+			if (favoriteRecord[j]['place_id'] == tmp[i]['place_id']){
+				star = '<button type="button" onclick="javascript:removeFavorite(' + tmp[i]['place_id'] + ')" class="btn btn-default"><span class="glyphicon glyphicon-star" aria-hidden="true"></span></button>'
+				break;
+			}
+		}
+		result += '<tr><td>' + (parseInt(i) + 1) + '</td>' 
+			+ '<td><img src=\"' + tmp[i]['icon'] + '\" /></td>' 
+			+ '<td>' + tmp[i]['name'] + '</td>' 
+			+ '<td>' + tmp[i]['vicinity'] + '</td>' 
+			+ '<td>' + star + '</td>' 
+			+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + tmp[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
+	}
+	$('#search-result').html(result);
 }
 
 function nextPage(){
 	if (pageIndex < pageData.length - 1){
-		$('#search-result').html('');
 		pageIndex += 1;
-		$('#search-result').append(renderSearchResult(pageData[pageIndex]));
+		renderSearchResult();
 		renderPagination();
 	} else if('next_page_token' in pageData[pageIndex]){
 		$.ajax({
@@ -244,9 +258,8 @@ function nextPage(){
 			success: function(data){
 				if (data.status == "OK"){
 					pageData.push(data)
-					$('#search-result').html('');
 					pageIndex += 1;
-					$('#search-result').append(renderSearchResult(data));
+					renderSearchResult();
 					renderPagination();
 				}
 			},
@@ -261,9 +274,8 @@ function nextPage(){
 
 function previousPage(){
 	if (pageIndex > 0){
-		$('#search-result').html('');
 		pageIndex -= 1;
-		$('#search-result').append(renderSearchResult(pageData[pageIndex]));
+		renderSearchResult();
 		renderPagination();
 	} else {
 		console.log("No previous page");
@@ -280,6 +292,39 @@ function renderPagination(){
 		result += '<button class="btn btn-default" onclick="nextPage()">Next</button>';
 	}
 	$('#pagination').html(result);
+}
+
+function setFavorite(index){
+	favoriteRecord.push(pageData[pageIndex]['results'][index]);
+	localStorage.setItem("favorite", JSON.stringify(favoriteRecord));
+	renderSearchResult();
+}
+
+function removeFavorite(id){
+	for (var i in favoriteRecord){
+		if (favoriteRecord[i]['place_id'] == id){
+			favoriteRecord.splice(i, 1);
+			break
+		}
+	}
+	//favoriteRecord.splice(index, 1);
+	localStorage.setItem("favorite", JSON.stringify(favoriteRecord));
+	renderFavoriteTab();
+}
+
+function renderFavoriteTab(){
+	$('#results-btn').attr("class", "btn btn-default");
+	$('#favorite-btn').attr("class", "btn btn-primary");
+	var result = "<tr><th>#</th><th>Category</th><th>Name</th><th>Address</th><th>Favorite</th><th>Details</th></tr>"
+	for (var i in favoriteRecord){
+		result += '<tr><td>' + (parseInt(i) + 1) + '</td>' 
+			+ '<td><img src=\"' + favoriteRecord[i]['icon'] + '\" /></td>' 
+			+ '<td>' + favoriteRecord[i]['name'] + '</td>' 
+			+ '<td>' + favoriteRecord[i]['vicinity'] + '</td>' 
+			+ '<td><button type="button" onclick="javascript:removeFavorite(\'' + favoriteRecord[i]['place_id'] + '\')" class="btn btn-default"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>' 
+			+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + favoriteRecord[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
+	}
+	$('#search-result').html(result);
 }
 
 function init(){
@@ -314,11 +359,10 @@ function init(){
 			dataType: 'json',
 			success: function(data){
 				if (data['status'] == 'OK'){
-					console.log(data);
-					$('#search-result').html('');
-					$('#search-result').append(renderSearchResult(data))
+					//console.log(data);
 					pageData.push(data);
 					pageIndex = 0;
+					renderSearchResult();
 					renderPagination();
 				}
 			},
@@ -336,6 +380,7 @@ function init(){
 	googleMapStatus = 1;
 	marker = null;
 	initAutoComplete();
+	favoriteRecord = localStorage.getItem('favorite') ? JSON.parse(localStorage.getItem('favorite')) : Array();
 }
 
 function geolocate() {
