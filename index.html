@@ -16,6 +16,9 @@
 		<tr><td>hahah</td><td>kjhwafkh</td></tr>
 	</table>
 </div> -->
+<!-- <div class="stars-outer">
+ 	<div class="stars-inner" style="width: 50%"></div>
+</div> -->
 <div class="row">
 	<div class="col-md-6 col-md-offset-3" id="search">
 		<h3 class="col-md-8 col-md-offset-2">Travel and Entertainment Search</h3>
@@ -144,18 +147,18 @@
 		<div id="review" class="detail-tag">
 			<div class="row">
 				<div class="col-md-2">
-					<select class="form-control">
-						<option>Google Reviews</option>
-						<option>Yelp Reviews</option>
+					<select id="review-selector" class="form-control" >
+						<option value="google">Google Reviews</option>
+						<option value="yelp">Yelp Reviews</option>
 					</select>
 				</div>
 				<div class="col-md-2">
-					<select class="form-control">
-						<option>Default Order</option>
-						<option>Highest Rating</option>
-						<option>Lowest Rating</option>
-						<option>Most Recent</option>
-						<option>Least Recent</option>
+					<select id="review-sorting" class="form-control">
+						<option value="default">Default Order</option>
+						<option value="high-rating">Highest Rating</option>
+						<option value="low-rating">Lowest Rating</option>
+						<option value="most-recent">Most Recent</option>
+						<option value="least-recent">Least Recent</option>
 					</select>
 				</div>
 			</div>

@@ -3,15 +3,19 @@ const DOMAIN = ""
 
 function set_place_detail(place, status){
 	if (status == google.maps.places.PlacesServiceStatus.OK){
+		googleReviews = place.reviews;
 		set_info(place);
 		set_map(place);
 		setStreetView();
 		set_photo(place);
-		set_google_reviews(place);
-		set_yelp_reviews(place);
+		set_google_reviews();
+		get_yelp_reviews(place);
+		toggleReviews('google');
 		toggleDetailInfo(1);
 		toggleListDetail('detail');
 		$('#detail-btn').removeAttr('disabled');
+	} else {
+		console.log("Fail to get detail data");
 	}
 }
 
@@ -141,18 +145,100 @@ function setStreetView(){
 	
 }
 
-function set_google_reviews(data){
-	for (var i in data.reviews){
-		var profile = '<img src="' + data.reviews[i].profile_photo_url + '">';
-		var name = '<span>' + data.reviews[i].author_name + '</span>';
-		var rating = data.reviews[i].rating;
-		var date = new Date(parseInt(data.reviews[i].time));
-		var comment = data.reviews[i].text;
-		$('#google-reviews').append('<li class="list-group-item">' + profile + name + rating + date + comment + '</li>')
+function toggleReviews(status){
+	if (status == 'google'){
+		$('#yelp-reviews').hide();
+		$('#google-reviews').show();
+	} else if (status == 'yelp'){
+		$('#google-reviews').hide();
+		$('#yelp-reviews').show();
 	}
 }
 
-function set_yelp_reviews(data){
+function sortReviews(data, compareFn){
+	//var d = Object.assign(data);
+	var d = JSON.parse(JSON.stringify(data))
+	d.sort(compareFn);
+	return d;
+}
+
+function generateReviewTag(profile, author_url, name, rating, date, comment){
+	var li = $('<li class="list-group-item"></li>');
+	var row = $('<div class="row"></div>')
+	var leftDiv = $('<div class="col-md-1"></div>');
+	var rightDiv = $('<div class="col-md-11"></div>');
+	var rating_percent = 100 * parseFloat(rating) / 5;
+	var rating_div = '<div class="stars-outer"><div class="stars-inner" style="width: ' + rating_percent + '%"></div></div>';
+	leftDiv.append('<a target="__blank" href="' + author_url + '"><img class="review-card-profile" src="' + profile + '"></a>');
+	rightDiv.append('<a target="__blank" href="' + author_url + '"><span>' + name + '</span></a><br>');
+	rightDiv.append('<span>' + rating_div + '</span> <span>' + date + '</span><br>');
+	rightDiv.append('<span>' + comment + '</span>');
+	row.append(leftDiv);
+	row.append(rightDiv);
+	li.append(row)
+	return li;
+	// var t = '<li class="list-group-item"><div class="col-md-1"><img class="review-card-profile" src="' + profile + '"></div>'
+	// 	+	'<div class="col-md-11"><span>' + name + '</span><br><span>' + rating + '</span><span>' + date + '</span><br><span>' + comment + '</span></div></li>'
+	// console.log(t);
+	// return t;
+}
+
+function formatInteger(num){
+	return ('0' + num).slice(-2);
+}
+
+function set_google_reviews(){
+	$('#google-reviews').html('');
+	if ($('#review-sorting').val() == 'default'){
+		var data = googleReviews;
+	} else if ($('#review-sorting').val() == 'high-rating'){
+		var data = sortReviews(googleReviews, function(a,b){return a.rating < b.rating ? 1 : -1});
+	} else if ($('#review-sorting').val() == 'low-rating'){
+		var data = sortReviews(googleReviews, function(a,b){return a.rating > b.rating ? 1 : -1});
+	} else if ($('#review-sorting').val() == 'most-recent'){
+		var data = sortReviews(googleReviews, function(a,b){return a.time < b.time ? 1 : -1});
+	} else if ($('#review-sorting').val() == 'least-recent'){
+		var data = sortReviews(googleReviews, function(a,b){return a.time > b.time ? 1 : -1});
+	}
+	for (var i in data){
+		var profile = data[i].profile_photo_url;
+		var author_url = data[i].author_url
+		var name = data[i].author_name;
+		var rating = data[i].rating;
+		var date_obj = new Date(parseInt(data[i].time) * 1000);
+		var date = (date_obj.getYear() + 1900) + '-' + formatInteger(date_obj.getMonth() + 1) + '-' + formatInteger(date_obj.getDay()) + ' ' + formatInteger(date_obj.getHours()) + ':' + formatInteger(date_obj.getMinutes()) + ':' + formatInteger(date_obj.getSeconds());
+		var comment = data[i].text;
+		//$('#google-reviews').append('<li class="list-group-item">' + profile + name + rating + date + comment + '</li>')
+		$('#google-reviews').append(generateReviewTag(profile, author_url, name, rating, date, comment))
+	}
+}
+
+function set_yelp_reviews(){
+	$('#yelp-reviews').html('')
+	if ($('#review-sorting').val() == 'default'){
+		var data = yelpReviews;
+	} else if ($('#review-sorting').val() == 'high-rating'){
+		var data = sortReviews(yelpReviews, function(a,b){return a.rating < b.rating ? 1 : -1});
+	} else if ($('#review-sorting').val() == 'low-rating'){
+		var data = sortReviews(yelpReviews, function(a,b){return a.rating > b.rating ? 1 : -1});
+	} else if ($('#review-sorting').val() == 'most-recent'){
+		var data = sortReviews(yelpReviews, function(a,b){return (new Date(a.time_created)).getTime() < (new Date(b.time_created)).getTime() ? 1 : -1});
+	} else if ($('#review-sorting').val() == 'least-recent'){
+		var data = sortReviews(yelpReviews, function(a,b){return (new Date(a.time_created)).getTime() > (new Date(b.time_created)).getTime() ? 1 : -1});
+	}
+	for (var i in data){
+		var profile = data[i].user.image_url;
+		var author_url = data[i].url;
+		var name = data[i].user.name;
+		var rating = data[i].rating;
+		var date = data[i].time_created;
+		var comment = data[i].text;
+		//$('#yelp-reviews').append('<li class="list-group-item">' + profile + name + rating + date + comment + '</li>')
+		$('#yelp-reviews').append(generateReviewTag(profile, author_url, name, rating, date, comment))
+	}
+}
+
+function get_yelp_reviews(data){
 	for (var i in data.address_components){
 		if ($.inArray('country', data.address_components[i].types) > -1){
 			var country = data.address_components[i].short_name;
@@ -185,15 +271,8 @@ function set_yelp_reviews(data){
 				console.log(data['status']);
 				return;
 			}
-			data = data['data'];
-			for (var i in data.reviews){
-				var profile = '<img src="' + data.reviews[i].user.image_url + '">';
-				var name = '<span>' + data.reviews[i].user.name + '</span>';
-				var rating = data.reviews[i].rating;
-				var date = data.reviews[i].time_created;
-				var comment = data.reviews[i].text;
-				$('#yelp-reviews').append('<li class="list-group-item">' + profile + name + rating + date + comment + '</li>')
-			}
+			yelpReviews = data['data'].reviews
+			set_yelp_reviews();
 		},
 		error: function(){
 			console.log('error');
@@ -424,6 +503,13 @@ function init(){
 	$("#get-direction-btn").click(function(event){
 		event.preventDefault();
 		getDirection();
+	})
+	$('#review-selector').change(function(){
+		toggleReviews($('#review-selector').val());
+	})
+	$('#review-sorting').change(function(){
+		set_google_reviews();
+		set_yelp_reviews();
 	})
 	service = new google.maps.places.PlacesService(map);
 	googleMapStatus = 1;

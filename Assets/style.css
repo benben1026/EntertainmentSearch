@@ -16,3 +16,35 @@
 .detail, .list{
 	display: none;
 }
+
+/* review card css */
+.review-card-profile{
+	border-radius: 50%;
+	width: 50px;
+	height: 50px;
+}
+
+
+.stars-outer {
+  display: inline-block;
+  position: relative;
+  font-family: Glyphicons Halflings;
+}
+
+.stars-outer::before {
+  content: "\e007 \e007 \e007 \e007 \e007";
+}
+
+.stars-inner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  width: 0;
+}
+
+.stars-inner::before {
+  content: "\e006 \e006 \e006 \e006 \e006";
+  color: #f8ce0b;
+}
