@@ -327,6 +327,11 @@ function toggleIcon(){
 }
 
 function renderSearchResult(){
+	if (pageData.length == 0){
+		toggleNoRecord('show');
+		return;
+	}
+	toggleNoRecord('hide');
 	toggleListDetail('list')
 	$('#results-btn').attr("class", "btn btn-primary");
 	$('#favorite-btn').attr("class", "btn btn-default");
@@ -433,6 +438,11 @@ function removeFavorite(id, callback, page=1){
 }
 
 function renderFavoriteTab(page=1){
+	if (favoriteRecord.length == 0){
+		toggleNoRecord('show');
+		return;
+	}
+	toggleNoRecord('hide');
 	toggleListDetail('list');
 	if (page != 1 && page > parseInt(Math.ceil(favoriteRecord.length / 20))){
 		page = parseInt(Math.ceil(favoriteRecord.length / 20))
@@ -460,6 +470,16 @@ function renderFavoriteTab(page=1){
 	$('#pagination').html(result);
 }
 
+function toggleNoRecord(status){
+	if (status == 'show'){
+		$('#no-record').show();
+		$('.list').hide();
+		$('.detail').hide();
+	} else {
+		$('#no-record').hide();
+	}
+}
+
 function toggleListDetail(status){
 	if (status == 'detail'){
 		$('.list').hide();
@@ -485,8 +505,39 @@ function toggleDetailInfo(tag){
 			$('#map-container').show();
 			break;
 		case 4:
+			toggleReviews($('#review-selector').val());
+			set_google_reviews();
+			set_yelp_reviews();
 			$('#review').show();
 			break;
+	}
+}
+
+function checkFromWhere(){
+	if (document.getElementsByName("from")[0].checked){
+		document.getElementById("location-from").disabled = "disabled";
+	} else {
+		document.getElementById("location-from").disabled = "";
+	}
+}
+
+function toggleKeywordErrorMsg(status){
+	if (status == 'show'){
+		$('#keyword-form-group').addClass('has-error');
+		$('#keyword-error-msg').show();
+	} else {
+		$('#keyword-form-group').removeClass('has-error');
+		$('#keyword-error-msg').hide();
+	}
+}
+
+function toggleLocationErrorMsg(status){
+	if (status == 'show'){
+		$('#from-form-group').addClass('has-error');
+		$('#location-error-msg').show();
+	} else {
+		$('#from-form-group').removeClass('has-error');
+		$('#location-error-msg').hide();
 	}
 }
 
@@ -497,15 +548,37 @@ function init(){
 		success: function(data){
 			client_lat = data['lat'];
 			client_lng = data['lon'];
+			$('#search-btn').removeAttr('disabled');
 		},
 		error: function(){
 			console.log("Cannot get client coordinate")
 		}
 	})
 
+	$('#clear-btn').click(function(event){
+		event.preventDefault();
+		$('#search-form')[0].reset();
+		$('#location-from').attr('disabled', 'disabled');
+		$('.list').hide();
+		$('.detail').hide();
+		$('#detail-btn').attr('disabled', 'disabled')
+	})
+
 
 	$("#search-form").submit(function(event){
 		event.preventDefault();
+		if ($('#keyword').val().trim() == ""){
+			toggleKeywordErrorMsg('show');
+			return;
+		} else {
+			toggleKeywordErrorMsg('hide');
+		}
+		if (!document.getElementsByName("from")[0].checked && $('#location-from').val().trim() == ""){
+			toggleLocationErrorMsg('show');
+			return;
+		} else {
+			toggleLocationErrorMsg('hide');
+		}
 		pageData = [];
 		pageIndex = -1;
 		var url = DOMAIN + "/search?keyword=" + $('#keyword').val() 
@@ -515,7 +588,7 @@ function init(){
 				+ "&location=" + $('#location-from').val()
 				+ "&lat=" + client_lat
 				+ "&lng=" + client_lng;
-		console.log(url)
+		//console.log(url)
 		$.ajax({
 			url: url,
 			type: 'get',
@@ -527,6 +600,8 @@ function init(){
 					pageIndex = 0;
 					renderSearchResult();
 					renderPagination();
+				} else if (data['status']== 'ZERO_RESULTS'){
+					toggleNoRecord('show');
 				}
 			},
 			error: function(){
@@ -551,6 +626,8 @@ function init(){
 	marker = null;
 	initAutoComplete();
 	favoriteRecord = localStorage.getItem('favorite') ? JSON.parse(localStorage.getItem('favorite')) : Array();
+	document.getElementsByName("from")[1].addEventListener("click", checkFromWhere);
+	document.getElementsByName("from")[0].addEventListener("click", checkFromWhere);
 }
 
 function geolocate() {

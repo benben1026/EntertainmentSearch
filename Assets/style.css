@@ -48,3 +48,11 @@
   content: "\e006 \e006 \e006 \e006 \e006";
   color: #f8ce0b;
 }
+
+#no-record{
+	text-align: left;
+	background-color: #ffa200;
+    height: 25px;
+    margin-top: 30px;
+    display: none;
+}
