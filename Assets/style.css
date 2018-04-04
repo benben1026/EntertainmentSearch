@@ -1,5 +1,6 @@
-#search{
+#search-form{
 	border: solid 1px black;
+	padding: 15px 30px;
 }
 .glyphicon-star{
 	color: rgb(255, 171, 24);
