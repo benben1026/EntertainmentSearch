@@ -10,6 +10,7 @@ function set_place_detail(place, status){
 		set_photo(place);
 		set_google_reviews();
 		get_yelp_reviews(place);
+		setDetailIcon(place);
 		toggleReviews('google');
 		toggleDetailInfo(1);
 		toggleListDetail('detail');
@@ -26,8 +27,11 @@ function set_info(data){
 		$('#info tbody').append('<tr><td>Phone Number</td><td>' + data['international_phone_number'] + '</td></tr>');
 	if (data['price_level'])
 		$('#info tbody').append('<tr><td>Price Level</td><td>' + data['price_level'] + '</td></tr>');
-	if (data['rating'])
-		$('#info tbody').append('<tr><td>Rating</td><td>' + data['rating'] + '</td></tr>');
+	if (data['rating']){
+		var rating_percent = 100 * parseFloat(data['rating']) / 5;
+		var rate = '<div class="stars-outer"><div class="stars-inner" style="width: ' + rating_percent + '%"></div></div>'
+		$('#info tbody').append('<tr><td>Rating</td><td>' + rate + '</td></tr>');
+	}
 	if (data['url'])
 		$('#info tbody').append('<tr><td>Google Page</td><td><a target="__blank" href="' + data['url'] + '">' + data['url'] + '</a></td></tr>');
 	if (data['website'])
@@ -80,15 +84,38 @@ function set_map(data){
 		title: name
 	});
 	map.setCenter(latLng);
-	// panorama = new google.maps.StreetViewPanorama(
-	// 	document.getElementById("street-view"), {
-	// 		position: {lat: parseFloat(destLat), lng: parseFloat(destLng)},
-	// 		pov: {
-	// 			heading: 34,
-	// 			pitch: 10
-	// 		}
-	// 	})
-	//map.setStreetView(panorama);
+}
+
+function toggleFavoriteIcon(){
+	if ($('#detail-favorite-empty-star').css('display') == 'none'){
+		$('#detail-favorite-empty-star').show();
+		$('#detail-favorite-star').hide();
+	} else {
+		$('#detail-favorite-empty-star').hide();
+		$('#detail-favorite-star').show();
+	}
+}
+
+function setDetailIcon(data){
+	var starEmpty = $('<button id="detail-favorite-empty-star" type="button" onclick="javascript:setFavorite(\'' + data.place_id + '\', toggleFavoriteIcon)" class="btn btn-default"><span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span></button>')
+	var star = $('<button id="detail-favorite-star" type="button" onclick="javascript:removeFavorite(\'' + data.place_id + '\', toggleFavoriteIcon)" class="btn btn-default" style="display:none;"><span class="glyphicon glyphicon-star" aria-hidden="true"></span></button>')
+	for (var j in favoriteRecord){
+		if (favoriteRecord[j]['place_id'] == data.place_id){
+			//star = '<button id="detail-favorite-star" type="button" onclick="javascript:removeFavorite(\'' + data.place_id + '\', setIcon)" class="btn btn-default"><span class="glyphicon glyphicon-star" aria-hidden="true"></span></button>'
+			star.attr('style', 'display:');
+			starEmpty.attr('style', 'display:none');
+			break;
+		}
+	}
+	var name = encodeURIComponent(data.name);
+	var url = encodeURIComponent(data.website);
+	var address = encodeURIComponent(data.formatted_address);
+	var href = 'https://twitter.com/intent/tweet?text=Check+out+' + name + '+located+at+' + address + '.+Website%3A&url=' + url + '&hashtags=TravelAndEntertainmentSearch'
+	var twitter = '<a href="' + href + '"><img src="http://cs-server.usc.edu:45678/hw/hw8/images/Twitter.png" style="width: 35px;"></a>';
+	$('#detailIcon').html('');
+	$('#detailIcon').append(star);
+	$('#detailIcon').append(starEmpty);
+	$('#detailIcon').append(twitter);
 }
 
 function getDirection(){
@@ -312,7 +339,7 @@ function renderSearchResult(){
 	$('.result-data').remove()
 	var tmp = pageData[pageIndex]['results']
 	for (var i in tmp){
-		var star = '<button type="button" onclick="javascript:setFavorite(' + i + ')" class="btn btn-default"><span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span></button>'
+		var star = '<button type="button" onclick="javascript:setFavorite(\'' + tmp[i]['place_id'] + '\', renderSearchResult)" class="btn btn-default"><span class="glyphicon glyphicon-star-empty" aria-hidden="true"></span></button>'
 		for (var j in favoriteRecord){
 			if (favoriteRecord[j]['place_id'] == tmp[i]['place_id']){
 				star = '<button type="button" onclick="javascript:removeFavorite(\'' + tmp[i]['place_id'] + '\', renderSearchResult)" class="btn btn-default"><span class="glyphicon glyphicon-star" aria-hidden="true"></span></button>'
@@ -322,9 +349,9 @@ function renderSearchResult(){
 		var row = '<tr class="result-data"><td>' + (parseInt(i) + 1) + '</td>' 
 			+ '<td><img class="result-category-icon" src=\"' + tmp[i]['icon'] + '\" /></td>' 
 			+ '<td>' + tmp[i]['name'] + '</td>' 
-			+ '<td>' + tmp[i]['vicinity'] + '</td>' 
+			+ '<td>' + tmp[i]['vicinity'] + '</td>'
 			+ '<td>' + star + '</td>' 
-			+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + tmp[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
+			+ '<td><button type="button" onclick="javascript:$(\'#search-result tr\').removeClass(\'info\');$(this).parent().parent().addClass(\'info\');service.getDetails({placeId: \'' + tmp[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
 		$('#search-result tr:last').after(row);
 	}
 	// $('#search-result').html('');
@@ -379,10 +406,18 @@ function renderPagination(){
 	$('#pagination').html(result);
 }
 
-function setFavorite(index){
-	favoriteRecord.push(pageData[pageIndex]['results'][index]);
-	localStorage.setItem("favorite", JSON.stringify(favoriteRecord));
-	renderSearchResult();
+function setFavorite(id, callback){
+	for (var i in pageData){
+		for (var j in pageData[i]['results']){
+			if (pageData[i]['results'][j].place_id == id){
+				favoriteRecord.push(pageData[i]['results'][j]);
+				localStorage.setItem("favorite", JSON.stringify(favoriteRecord));
+				//renderSearchResult();
+				callback();
+				return;
+			}
+		}
+	}
 }
 
 function removeFavorite(id, callback, page=1){
@@ -399,7 +434,7 @@ function removeFavorite(id, callback, page=1){
 
 function renderFavoriteTab(page=1){
 	toggleListDetail('list');
-	if (page > parseInt(Math.ceil(favoriteRecord.length / 20))){
+	if (page != 1 && page > parseInt(Math.ceil(favoriteRecord.length / 20))){
 		page = parseInt(Math.ceil(favoriteRecord.length / 20))
 	}
 	$('#results-btn').attr("class", "btn btn-default");

@@ -8,17 +8,9 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 	<script type="text/javascript" src="mycode.js"></script>
+	<script type="text/javascript" async src="https://platform.twitter.com/widgets.js"></script>
 </head>
 <body>
-<!-- <div class="row">
-	<table class="table">
-		<tr><th>asdf</th><th>asdf</th></tr>
-		<tr><td>hahah</td><td>kjhwafkh</td></tr>
-	</table>
-</div> -->
-<!-- <div class="stars-outer">
- 	<div class="stars-inner" style="width: 50%"></div>
-</div> -->
 <div class="row">
 	<div class="col-md-6 col-md-offset-3" id="search">
 		<h3 class="col-md-8 col-md-offset-2">Travel and Entertainment Search</h3>
@@ -85,6 +77,10 @@
 	</div>
 </div>
 <div class="row detail">
+	<div id="detailIcon" class="col-md-8 col-md-offset-2" style="text-align: right"></div>
+</div>
+
+<div class="row detail">
 	<div class="col-md-8 col-md-offset-2">
 		<ul class="nav nav-tabs" style="padding-left: 60%">
 			<li role="presentation" class="active"><a href="javascript:toggleDetailInfo(1)">Info</a></li>
@@ -97,7 +93,7 @@
 
 <div class="row detail">
 	<div class="col-md-8 col-md-offset-2">
-		<table class="table detail-tag" id="info"></table>
+		<table class="table detail-tag table-striped" id="info"></table>
 		<div id="photo" class="detail-tag">
 			<div class="col-md-3 photo-container"></div>
 			<div class="col-md-3 photo-container"></div>
