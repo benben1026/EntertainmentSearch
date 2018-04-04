@@ -3,15 +3,15 @@ const DOMAIN = ""
 
 function set_place_detail(place, status){
 	if (status == google.maps.places.PlacesServiceStatus.OK){
-		googleReviews = place.reviews;
+		googleReviews = typeof place.reviews == 'undefined' ? [] : place.reviews;
 		set_info(place);
 		set_map(place);
 		setStreetView();
 		set_photo(place);
-		set_google_reviews();
 		get_yelp_reviews(place);
+		set_google_reviews();
 		setDetailIcon(place);
-		toggleReviews('google');
+		//toggleReviews('google');
 		toggleDetailInfo(1);
 		toggleListDetail('detail');
 		$('#detail-btn').removeAttr('disabled');
@@ -25,8 +25,14 @@ function set_info(data){
 	$('#info tbody').append('<tr><td>Address</td><td>' + data['adr_address'] + '</td></tr>');
 	if (data['international_phone_number'])
 		$('#info tbody').append('<tr><td>Phone Number</td><td>' + data['international_phone_number'] + '</td></tr>');
-	if (data['price_level'])
-		$('#info tbody').append('<tr><td>Price Level</td><td>' + data['price_level'] + '</td></tr>');
+	if (data['price_level']){
+		var level = "";
+		for (var i = 0; i < parseInt(data['price_level']); i++){
+			level += '<span class="glyphicon glyphicon-usd" aria-hidden="true"></span>'
+		}
+		level = level == "" ? '<span>Free</span>' : level;
+		$('#info tbody').append('<tr><td>Price Level</td><td>' + level + '</td></tr>');
+	}
 	if (data['rating']){
 		var rating_percent = 100 * parseFloat(data['rating']) / 5;
 		var rate = '<div class="stars-outer"><div class="stars-inner" style="width: ' + rating_percent + '%"></div></div>'
@@ -52,10 +58,12 @@ function set_info(data){
 }
 
 function set_photo(data){
+	$('.photo-container').html('');
+	$('#no-photo-msg').remove()
 	if (!('photos' in data) || data.photos.length == 0){
+		$('#photo').append('<div id="no-photo-msg" class="no-review">No photos</div>');
 		return;
 	}
-	$('.photo-container').html('');
 	var photo_container_index = 0;
 	for(var i in data.photos){
 		if (photo_container_index >= 4){
@@ -216,6 +224,10 @@ function formatInteger(num){
 
 function set_google_reviews(){
 	$('#google-reviews').html('');
+	if(googleReviews.length == 0){
+		$('#google-reviews').append('<li class="list-group-item"><div class="no-review">No reviews</div></li>');
+		return;
+	}
 	if ($('#review-sorting').val() == 'default'){
 		var data = googleReviews;
 	} else if ($('#review-sorting').val() == 'high-rating'){
@@ -241,7 +253,11 @@ function set_google_reviews(){
 }
 
 function set_yelp_reviews(){
-	$('#yelp-reviews').html('')
+	$('#yelp-reviews').html('');
+	if (yelpReviews.length == 0){
+		$('#yelp-reviews').append('<li class="list-group-item"><div class="no-review">No reviews</div></li>');
+		return;
+	}
 	if ($('#review-sorting').val() == 'default'){
 		var data = yelpReviews;
 	} else if ($('#review-sorting').val() == 'high-rating'){
@@ -289,6 +305,7 @@ function get_yelp_reviews(data){
 		address: encodeURIComponent(street_number + " " + route),
 		postal: postal
 	}
+	yelpReviews =[];
 	console.log(DOMAIN + "/getyelpreviews?" + $.param(param))
 	$.ajax({
 		url: DOMAIN + "/getyelpreviews?" + $.param(param),
@@ -565,6 +582,8 @@ function init(){
 	})
 
 
+	pageData = [];
+	pageIndex = -1;
 	$("#search-form").submit(function(event){
 		event.preventDefault();
 		if ($('#keyword').val().trim() == ""){
@@ -579,8 +598,6 @@ function init(){
 		} else {
 			toggleLocationErrorMsg('hide');
 		}
-		pageData = [];
-		pageIndex = -1;
 		var url = DOMAIN + "/search?keyword=" + $('#keyword').val() 
 				+ "&radius=" + parseInt($('#distance').val()) * 1609.34 
 				+ "&from=" + ($('[name="from"]')[0].checked ? "here" : "customized")
@@ -596,6 +613,7 @@ function init(){
 			success: function(data){
 				if (data['status'] == 'OK'){
 					//console.log(data);
+					pageData = [];
 					pageData.push(data);
 					pageIndex = 0;
 					renderSearchResult();

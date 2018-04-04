@@ -84,7 +84,7 @@
 	</div>
 </div>
 <div class="row">
-	<div class="col-md-2 col-md-offset-5">
+	<div class="col-md-8 col-md-offset-2 col-sm-12" style="text-align: center;">
 		<a href="javascript:renderSearchResult()"><div id="results-btn" class="btn btn-primary">Results</div></a>
 		<a href="javascript:renderFavoriteTab()"><div id="favorite-btn" class="btn btn-default"">Favorites</div></a>
 	</div>
@@ -111,8 +111,8 @@
 </div>
 
 <div class="row detail">
-	<div class="col-md-8 col-md-offset-2">
-		<ul class="nav nav-tabs" style="padding-left: 60%">
+	<div class="col-md-8 col-md-offset-2 col-sm-12">
+		<ul class="nav nav-tabs pull-right">
 			<li role="presentation" class="active"><a href="javascript:toggleDetailInfo(1)">Info</a></li>
 			<li role="presentation"><a href="javascript:toggleDetailInfo(2)">Photos</a></li>
 			<li role="presentation"><a href="javascript:toggleDetailInfo(3)">Map</a></li>
@@ -150,13 +150,14 @@
 					</select>
 				</div>
 				<div class="col-md-2 form-group">
+					<label for="get-direction-btn"></label>
 					<button id="get-direction-btn" class="btn btn-primary" onclick="javascript:void(0)">Get Directions</button>
 				</div>
 			</div>
 			<div class="row">
-				<div class="col-md-1">
+				<div class="col-md-4 col-sm-6">
 					<a href="javascript:toggleIcon();">
-						<img id="google-map-toggle-icon" src="http://cs-server.usc.edu:45678/hw/hw8/images/Map.png" style="width: 50%">
+						<img id="google-map-toggle-icon" src="http://cs-server.usc.edu:45678/hw/hw8/images/Map.png" style="width: 20%">
 					</a>
 				</div>
 			</div>
@@ -172,14 +173,12 @@
 		</div>
 		<div id="review" class="detail-tag">
 			<div class="row">
-				<div class="col-md-2">
-					<select id="review-selector" class="form-control" >
+				<div class="col-md-6 col-sm-12">
+					<select id="review-selector">
 						<option value="google">Google Reviews</option>
 						<option value="yelp">Yelp Reviews</option>
 					</select>
-				</div>
-				<div class="col-md-2">
-					<select id="review-sorting" class="form-control">
+					<select id="review-sorting">
 						<option value="default">Default Order</option>
 						<option value="high-rating">Highest Rating</option>
 						<option value="low-rating">Lowest Rating</option>
