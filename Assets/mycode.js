@@ -36,25 +36,44 @@ function set_info(data){
 	if (data['rating']){
 		var rating_percent = 100 * parseFloat(data['rating']) / 5;
 		var rate = '<div class="stars-outer"><div class="stars-inner" style="width: ' + rating_percent + '%"></div></div>'
-		$('#info tbody').append('<tr><td>Rating</td><td>' + rate + '</td></tr>');
+		$('#info tbody').append('<tr><td>Rating</td><td>' + data['rating'] + rate + '</td></tr>');
 	}
 	if (data['url'])
 		$('#info tbody').append('<tr><td>Google Page</td><td><a target="__blank" href="' + data['url'] + '">' + data['url'] + '</a></td></tr>');
 	if (data['website'])
 		$('#info tbody').append('<tr><td>Website</td><td><a target="__blank" href="' + data['website'] + '">' + data['website'] + '</a></td></tr>');
-	if (data['opening_hours']){
+	if (data['opening_hours'] && data['utc_offset']){
+		var d = new Date();
+		var utc = d.getTime() + (d.getTimezoneOffset() * 60000);
+		var t = new Date(utc + (parseInt(data.utc_offset) * 60000));
+
+		var getday = function(idx){
+			var today = t.getDay();
+			var day = (today + idx) % 7;
+			if(--day < 0){
+				day += 7;
+			}
+			return day;
+		}
+
+		var setPopupText = function(){
+			for (var i = 0; i < 7; i++){
+				var tr = '<td>' + data.opening_hours.weekday_text[getday(i)] + '</td>';
+				$('.open-hours:eq(' + i + ')').html(tr);
+			}
+		}
+
 		var innerhtml = "";
 		var currentdate = new Date(Date.now() + (new Date().getTimezoneOffset() * 60000) - parseInt(data['utc_offset']) * 60000) ;
 		var day = currentdate.getDay();
 		if (data['opening_hours']['open_now']){
-			innerhtml += "Open " + data['opening_hours']['weekday_text'][day];
+			innerhtml += "Open " + data.opening_hours.weekday_text[getday(i)];
 		} else {
 			innerhtml += "Closed"
 		}
-		//innerhtml += '&nbsp;&nbsp;<a><button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">Daily open hours</button></a>'
 		innerhtml += '&nbsp;&nbsp;<a href="javascript:void(0);" onclick="$(\'#open-hours-modal\').modal(\'show\');">Daily open hours</a>'
 		$('#info tbody').append('<tr><td>Hours</td><td>' + innerhtml + '</td></tr>');
-		$('#daily-open-hours').html('<span>' + data['opening_hours']['weekday_text'] + '</span>');
+		setPopupText();
 	}
 
 }
@@ -356,6 +375,7 @@ function toggleIcon(){
 function renderSearchResult(){
 	$('#results-btn').attr("class", "btn btn-primary");
 	$('#favorite-btn').attr("class", "btn btn-default");
+	resultFavoriteStatus = 'result';
 	if (pageData.length == 0){
 		toggleNoRecord('record');
 		return;
@@ -479,6 +499,7 @@ function removeFavorite(id, callback, page=1){
 function renderFavoriteTab(page=1){
 	$('#results-btn').attr("class", "btn btn-default");
 	$('#favorite-btn').attr("class", "btn btn-primary");
+	resultFavoriteStatus = 'favorite';
 	if (favoriteRecord.length == 0){
 		toggleNoRecord('record');
 		return;
@@ -526,11 +547,16 @@ function toggleNoRecord(status){
 	}
 }
 
-function toggleListDetail(status){
+function toggleListDetail(status, rerender=false){
 	if (status == 'detail'){
 		$('.list').hide();
 		$('.detail').show();
 	} else if(status == 'list'){
+		if (rerender && resultFavoriteStatus == 'result'){
+			renderSearchResult()
+		} else if (rerender) {
+			renderFavoriteTab();
+		}
 		$('.list').show();
 		$('.detail').hide();
 	}
@@ -677,6 +703,7 @@ function init(){
 		set_google_reviews();
 		set_yelp_reviews();
 	})
+	resultFavoriteStatus = 'result';
 	service = new google.maps.places.PlacesService(map);
 	googleMapStatus = 1;
 	marker = null;

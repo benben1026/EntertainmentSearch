@@ -131,7 +131,7 @@
 	</div>
 </div>
 <div class="row detail" style="text-align: left">
-	<div class="col-lg-8 col-lg-offset-2"><button class="btn btn-default btn-sm" onclick="toggleListDetail('list'); return false;">< List</button></div>
+	<div class="col-lg-8 col-lg-offset-2"><button class="btn btn-default btn-sm" onclick="toggleListDetail('list', true); return false;">< List</button></div>
 </div>
 <div class="row detail">
 	<div id="detailIcon" class="col-lg-8 col-lg-offset-2" style="text-align: right"></div>
@@ -156,7 +156,15 @@
 				<h4 class="modal-title" id="myModalLabel">Daily Opening Hours</h4>
 			</div>
 			<div class="modal-body">
-				<div id="daily-open-hours"></div>
+				<table id="daily-open-hours" class="table table-striped">
+					<tr class="open-hours"></tr>
+					<tr class="open-hours"></tr>
+					<tr class="open-hours"></tr>
+					<tr class="open-hours"></tr>
+					<tr class="open-hours"></tr>
+					<tr class="open-hours"></tr>
+					<tr class="open-hours"></tr>
+				</table>
 			</div>
 		</div>
 	</div>
