@@ -148,7 +148,12 @@ function setDetailIcon(data){
 }
 
 function getDirection(){
-	if ($('#map-from').val().trim().toLowerCase() == "your location"){
+	var input = $('#map-from').val().trim().toLowerCase()
+	if (input == ""){
+		alert('Please input the location you want to start');
+		return;
+	}
+	if (input == "your location" || input == "my location"){
 		fromLocationLat = client_lat;
 		fromLocationLng = client_lng;
 		calculateAndDisplayRoute();
@@ -166,9 +171,14 @@ function getDirection(){
 				$('.progress').hide();
 			},
 		success: function(data){
-			fromLocationLat = data['lat'];
-			fromLocationLng = data['lng'];
-			calculateAndDisplayRoute();
+			if (data){
+				fromLocationLat = data['lat'];
+				fromLocationLng = data['lng'];
+				calculateAndDisplayRoute();
+			} else {
+				alert('Failed to get route');
+				$('.progress').hide();
+			}
 		},
 		error: function(){
 			console.log('error');
