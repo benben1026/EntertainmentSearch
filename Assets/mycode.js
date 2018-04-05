@@ -354,14 +354,14 @@ function toggleIcon(){
 }
 
 function renderSearchResult(){
+	$('#results-btn').attr("class", "btn btn-primary");
+	$('#favorite-btn').attr("class", "btn btn-default");
 	if (pageData.length == 0){
 		toggleNoRecord('record');
 		return;
 	}
 	toggleNoRecord('hide');
 	toggleListDetail('list')
-	$('#results-btn').attr("class", "btn btn-primary");
-	$('#favorite-btn').attr("class", "btn btn-default");
 	if (typeof pageData == 'undefined'){
 		$('.result-data').remove()
 		return;
@@ -477,6 +477,8 @@ function removeFavorite(id, callback, page=1){
 }
 
 function renderFavoriteTab(page=1){
+	$('#results-btn').attr("class", "btn btn-default");
+	$('#favorite-btn').attr("class", "btn btn-primary");
 	if (favoriteRecord.length == 0){
 		toggleNoRecord('record');
 		return;
@@ -486,8 +488,6 @@ function renderFavoriteTab(page=1){
 	if (page != 1 && page > parseInt(Math.ceil(favoriteRecord.length / 20))){
 		page = parseInt(Math.ceil(favoriteRecord.length / 20))
 	}
-	$('#results-btn').attr("class", "btn btn-default");
-	$('#favorite-btn').attr("class", "btn btn-primary");
 	$('.result-data').remove()
 	
 	for (var i = 20 * (page - 1); i < favoriteRecord.length && i < 20 * page; i++){
