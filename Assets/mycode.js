@@ -51,8 +51,10 @@ function set_info(data){
 		} else {
 			innerhtml += "Closed"
 		}
-		innerhtml += "&nbsp;&nbsp;<a>Daily open hours</a>"
+		//innerhtml += '&nbsp;&nbsp;<a><button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">Daily open hours</button></a>'
+		innerhtml += '&nbsp;&nbsp;<a href="javascript:void(0);" onclick="$(\'#open-hours-modal\').modal(\'show\');">Daily open hours</a>'
 		$('#info tbody').append('<tr><td>Hours</td><td>' + innerhtml + '</td></tr>');
+		$('#daily-open-hours').html('<span>' + data['opening_hours']['weekday_text'] + '</span>');
 	}
 
 }
@@ -136,6 +138,14 @@ function getDirection(){
 	$.ajax({
 		url: DOMAIN + "/geocode?location=" + encodeURIComponent($('#map-from').val()),
 		dataType: 'json',
+		beforeSend: function(){
+				$('.progress-bar').css('width', '0%');
+				$('.progress').show();
+				$('.progress-bar').css('width', '90%');
+			},
+			complete: function(){
+				$('.progress').hide();
+			},
 		success: function(data){
 			fromLocationLat = data['lat'];
 			fromLocationLng = data['lng'];
@@ -225,7 +235,7 @@ function formatInteger(num){
 function set_google_reviews(){
 	$('#google-reviews').html('');
 	if(googleReviews.length == 0){
-		$('#google-reviews').append('<li class="list-group-item"><div class="no-review">No reviews</div></li>');
+		$('#google-reviews').append('<li class="list-group-item"><div class="alert alert-warning">No reviews</div></li>');
 		return;
 	}
 	if ($('#review-sorting').val() == 'default'){
@@ -255,7 +265,7 @@ function set_google_reviews(){
 function set_yelp_reviews(){
 	$('#yelp-reviews').html('');
 	if (yelpReviews.length == 0){
-		$('#yelp-reviews').append('<li class="list-group-item"><div class="no-review">No reviews</div></li>');
+		$('#yelp-reviews').append('<li class="list-group-item"><div class="alert alert-warning">No reviews</div></li>');
 		return;
 	}
 	if ($('#review-sorting').val() == 'default'){
@@ -345,7 +355,7 @@ function toggleIcon(){
 
 function renderSearchResult(){
 	if (pageData.length == 0){
-		toggleNoRecord('show');
+		toggleNoRecord('record');
 		return;
 	}
 	toggleNoRecord('hide');
@@ -386,9 +396,20 @@ function nextPage(){
 		renderSearchResult();
 		renderPagination();
 	} else if('next_page_token' in pageData[pageIndex]){
+
 		$.ajax({
 			url: DOMAIN + "/nextpage?pagetoken=" + pageData[pageIndex].next_page_token,
 			dataType: 'json',
+			beforeSend: function(){
+				$('.progress-bar').css('width', '0%');
+				$('.list').hide();
+				$('.progress').show();
+				$('.progress-bar').css('width', '90%');
+			},
+			complete: function(){
+				$('.list').show();
+				$('.progress').hide();
+			},
 			success: function(data){
 				if (data.status == "OK"){
 					pageData.push(data)
@@ -398,6 +419,7 @@ function nextPage(){
 				}
 			},
 			error: function(){
+				toggleNoRecord('error');
 				console.log("Fail to get next page");
 			}
 		})
@@ -456,7 +478,7 @@ function removeFavorite(id, callback, page=1){
 
 function renderFavoriteTab(page=1){
 	if (favoriteRecord.length == 0){
-		toggleNoRecord('show');
+		toggleNoRecord('record');
 		return;
 	}
 	toggleNoRecord('hide');
@@ -488,12 +510,19 @@ function renderFavoriteTab(page=1){
 }
 
 function toggleNoRecord(status){
-	if (status == 'show'){
+	if (status == 'record'){
 		$('#no-record').show();
+		$('#error-msg').hide();
+		$('.list').hide();
+		$('.detail').hide();
+	} else if (status == 'error'){
+		$('#error-msg').show();
+		$('#no-record').hide();
 		$('.list').hide();
 		$('.detail').hide();
 	} else {
 		$('#no-record').hide();
+		$('#error-msg').hide();
 	}
 }
 
@@ -606,24 +635,33 @@ function init(){
 				+ "&lat=" + client_lat
 				+ "&lng=" + client_lng;
 		//console.log(url)
+
 		$.ajax({
 			url: url,
 			type: 'get',
 			dataType: 'json',
+			beforeSend: function(){
+				$('.progress-bar').css('width', '0%');
+				$('.progress').show();
+				$('.progress-bar').css('width', '90%');
+			},
 			success: function(data){
 				if (data['status'] == 'OK'){
-					//console.log(data);
 					pageData = [];
 					pageData.push(data);
 					pageIndex = 0;
 					renderSearchResult();
 					renderPagination();
 				} else if (data['status']== 'ZERO_RESULTS'){
-					toggleNoRecord('show');
+					toggleNoRecord('record');
 				}
 			},
 			error: function(){
 				console.log('error');
+				toggleNoRecord('error');
+			},
+			complete: function(){
+				$('.progress').hide();
 			}
 		})
 	});

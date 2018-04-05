@@ -50,14 +50,6 @@
   color: #f8ce0b;
 }
 
-#no-record{
-	text-align: left;
-	background-color: #ffa200;
-    height: 25px;
-    margin-top: 30px;
-    display: none;
-}
-
-.no-review{
-	background-color: #ffa200;
+#no-record, #error-msg{
+	display: none;
 }
