@@ -101,6 +101,9 @@ function set_photo(data){
 function set_map(data){
 	if (marker)
 		marker.setMap(null);
+	if (typeof(directionsDisplay) != "undefined" && directionsDisplay){
+		directionsDisplay.setDirections({routes: []});
+	}
 	$('#map-to').val(data.name);
 	$('#map-from').val("Your location");
 	destLat = data['geometry']['location']['lat']();
