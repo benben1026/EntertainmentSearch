@@ -184,7 +184,7 @@ function getDirection(){
 			}
 		},
 		error: function(){
-			console.log('error');
+			alert('Network error. Please try later');
 		}
 	})
 }
@@ -361,7 +361,7 @@ function get_yelp_reviews(data){
 			set_yelp_reviews();
 		},
 		error: function(){
-			console.log('error');
+			alert('Network error. Please try later');
 		}
 	})
 }
@@ -454,7 +454,7 @@ function nextPage(){
 			},
 			error: function(){
 				toggleNoRecord('error');
-				console.log("Fail to get next page");
+				alert('Network error. Please try later');
 			}
 		})
 	} else {
@@ -640,7 +640,7 @@ function init(){
 			$('#search-btn').removeAttr('disabled');
 		},
 		error: function(){
-			console.log("Cannot get client coordinate")
+			alert("Network error, cannot get client coordinate");
 		}
 	})
 
@@ -702,8 +702,8 @@ function init(){
 				}
 			},
 			error: function(){
-				console.log('error');
 				toggleNoRecord('error');
+				console.log('Network Error.')
 			},
 			complete: function(){
 				$('.progress').hide();
