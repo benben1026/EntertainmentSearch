@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 	<title>CS571 HW8</title>
 	<meta charset="utf-8">
@@ -10,8 +10,14 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 	<script type="text/javascript" src="mycode.js"></script>
 	<script type="text/javascript" async src="https://platform.twitter.com/widgets.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-animate.js"></script>
 </head>
-<body>
+<body style="-webkit-overflow-scrolling: touch;" ng-app="ngAnimate">
+<div style="display: none">
+	<button id="in" ng-click="leftClick=true; rightClick=false"></button>
+	<button id="out" ng-click="leftClick=false; rightClick=true"></button>
+</div>
 <div class="container-fluid">
 	<div class="row" style="margin: auto">
 		<form class="col-lg-6 col-lg-offset-3 col-sm-12 form-horizontal" id="search-form">
@@ -104,6 +110,11 @@
 		<a href="javascript:renderFavoriteTab()"><div id="favorite-btn" class="btn btn-default"">Favorites</div></a>
 	</div>
 </div>
+
+
+
+
+
 <div class="row">
 	<div class="col-lg-8 col-lg-offset-2">
 		<div class="progress" style="display: none;">
@@ -120,7 +131,7 @@
 <div class="row list" style="text-align: right">
 	<div class="col-lg-8 col-lg-offset-2"><button id="detail-btn" class="btn btn-default btn-sm" onclick="toggleListDetail('detail'); return false;" disabled="">Detail ></button></div>
 </div>
-<div class="row list">
+<div class="row list slide-right" ng-show="rightClick">
 	<div class="col-lg-8 col-lg-offset-2">
 		<div class="table-responsive">
 			<table class="table" id="search-result">
@@ -137,7 +148,7 @@
 	<div id="detailIcon" class="col-lg-8 col-lg-offset-2" style="text-align: right"></div>
 </div>
 
-<div class="row detail">
+<div class="row detail slide-left" ng-show="leftClick">
 	<div class="col-lg-8 col-lg-offset-2">
 		<ul class="nav nav-tabs pull-right">
 			<li role="presentation" class="active"><a href="javascript:toggleDetailInfo(1)">Info</a></li>
@@ -170,7 +181,7 @@
 	</div>
 </div>
 
-<div class="row detail">
+<div class="row detail slide-left" ng-show="leftClick">
 	<div class="col-lg-8 col-lg-offset-2">
 		<table class="table detail-tag table-striped" id="info"></table>
 		<div id="photo" class="detail-tag">

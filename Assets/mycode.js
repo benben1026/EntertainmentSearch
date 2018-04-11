@@ -287,7 +287,7 @@ function set_google_reviews(){
 		var name = data[i].author_name;
 		var rating = data[i].rating;
 		var date_obj = new Date(parseInt(data[i].time) * 1000);
-		var date = (date_obj.getYear() + 1900) + '-' + formatInteger(date_obj.getMonth() + 1) + '-' + formatInteger(date_obj.getDay()) + ' ' + formatInteger(date_obj.getHours()) + ':' + formatInteger(date_obj.getMinutes()) + ':' + formatInteger(date_obj.getSeconds());
+		var date = (date_obj.getYear() + 1900) + '-' + formatInteger(date_obj.getMonth() + 1) + '-' + formatInteger(date_obj.getDate()) + ' ' + formatInteger(date_obj.getHours()) + ':' + formatInteger(date_obj.getMinutes()) + ':' + formatInteger(date_obj.getSeconds());
 		var comment = data[i].text;
 		//$('#google-reviews').append('<li class="list-group-item">' + profile + name + rating + date + comment + '</li>')
 		$('#google-reviews').append(generateReviewTag(profile, author_url, name, rating, date, comment))
@@ -411,12 +411,13 @@ function renderSearchResult(){
 				break;
 			}
 		}
-		var row = '<tr class="result-data"><td>' + (parseInt(i) + 1) + '</td>' 
+		var ifhighlight = recordHighlight.type == "search" && recordHighlight.index == i ? " info" : "";
+		var row = '<tr class="result-data' + ifhighlight + '"><td>' + (parseInt(i) + 1) + '</td>' 
 			+ '<td><img class="result-category-icon" src=\"' + tmp[i]['icon'] + '\" /></td>' 
 			+ '<td>' + tmp[i]['name'] + '</td>' 
 			+ '<td>' + tmp[i]['vicinity'] + '</td>'
 			+ '<td>' + star + '</td>' 
-			+ '<td><button type="button" onclick="javascript:$(\'#search-result tr\').removeClass(\'info\');$(this).parent().parent().addClass(\'info\');service.getDetails({placeId: \'' + tmp[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
+			+ '<td><button type="button" onclick="javascript:$(\'#search-result tr\').removeClass(\'info\');$(this).parent().parent().addClass(\'info\');recordHighlight.type=\'search\';recordHighlight.index=' + i + '; service.getDetails({placeId: \'' + tmp[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
 		$('#search-result tr:last').after(row);
 	}
 	// $('#search-result').html('');
@@ -525,12 +526,13 @@ function renderFavoriteTab(page=1){
 	$('.result-data').remove()
 	
 	for (var i = 20 * (page - 1); i < favoriteRecord.length && i < 20 * page; i++){
-		var row = '<tr class="result-data"><td>' + (i + 1) + '</td>' 
+		var ifhighlight = recordHighlight.type == "favorite" && recordHighlight.index == i ? " info" : "";
+		var row = '<tr class="result-data' + ifhighlight + '"><td>' + (i + 1) + '</td>' 
 			+ '<td><img class="result-category-icon" src=\"' + favoriteRecord[i]['icon'] + '\" /></td>' 
 			+ '<td>' + favoriteRecord[i]['name'] + '</td>' 
 			+ '<td>' + favoriteRecord[i]['vicinity'] + '</td>' 
 			+ '<td><button type="button" onclick="javascript:removeFavorite(\'' + favoriteRecord[i]['place_id'] + '\', renderFavoriteTab, ' + page + ')" class="btn btn-default"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></button></td>' 
-			+ '<td><button type="button" onclick="javascript:service.getDetails({placeId: \'' + favoriteRecord[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
+			+ '<td><button type="button" onclick="javascript:$(\'#search-result tr\').removeClass(\'info\');$(this).parent().parent().addClass(\'info\');recordHighlight.type=\'favorite\';recordHighlight.index=' + parseInt(i) + '; service.getDetails({placeId: \'' + favoriteRecord[i]['place_id'] + '\'}, set_place_detail);" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span></button></td></tr>'
 		$('#search-result tr:last').after(row)
 	}
 	var result = '';
@@ -564,6 +566,7 @@ function toggleListDetail(status, rerender=false){
 	if (status == 'detail'){
 		$('.list').hide();
 		$('.detail').show();
+		$('#in').click();
 	} else if(status == 'list'){
 		if (rerender && resultFavoriteStatus == 'result'){
 			renderSearchResult()
@@ -572,6 +575,7 @@ function toggleListDetail(status, rerender=false){
 		}
 		$('.list').show();
 		$('.detail').hide();
+		$('#out').click();
 	}
 }
 
@@ -646,7 +650,9 @@ function init(){
 		$('#location-from').attr('disabled', 'disabled');
 		$('.list').hide();
 		$('.detail').hide();
-		$('#detail-btn').attr('disabled', 'disabled')
+		$('#detail-btn').attr('disabled', 'disabled');
+		$('.alert').hide();
+		recordHighlight = {type: null, index:-1}
 	})
 
 
@@ -720,6 +726,7 @@ function init(){
 	service = new google.maps.places.PlacesService(map);
 	googleMapStatus = 1;
 	marker = null;
+	recordHighlight = {type: null, index:-1}
 	initAutoComplete();
 	favoriteRecord = localStorage.getItem('favorite') ? JSON.parse(localStorage.getItem('favorite')) : Array();
 	document.getElementsByName("from")[1].addEventListener("click", checkFromWhere);
