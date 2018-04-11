@@ -711,6 +711,14 @@ function init(){
 		})
 	});
 
+	$('#map-from').on('input', function(){
+		if ($('#map-from').val().trim() == ""){
+			$('#get-direction-btn').attr('disabled', 'disabled');
+		} else {
+			$('#get-direction-btn').removeAttr('disabled');
+		}
+	})
+
 	$("#get-direction-btn").click(function(event){
 		event.preventDefault();
 		getDirection();
