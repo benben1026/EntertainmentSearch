@@ -147,19 +147,7 @@ app.get('/placedetail', function(req, res){
 			res.send({'status': 'ERROR', 'msg': err})
 			return;
 		}
-		var output = {'status':'OK', 'address': data['result']['adr_address'], 
-			'phone_number': data['result']['international_phone_number'],
-			'price_level': data['result']['price_level'],
-			'rating': data['result']['rating'],
-			'website': data['result']['website'],
-			'google_page': data['result']['url'],
-			'hour': data['result']['opening_hours'],
-			'utc_offset': data['result']['utc_offset'],
-			'reviews': data['result']['reviews'],
-			'location': data['result']['geometry']['location'],
-			'name': data['result']['name']
-		}
-		res.send(JSON.stringify(output));
+		res.send(JSON.stringify(data));
 	}, qdata.id)
 })
 
