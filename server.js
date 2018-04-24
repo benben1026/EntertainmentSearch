@@ -37,9 +37,9 @@ app.get('/geocode', function(req, res){
 })
 
 
-function nearbysearch(callback, lat, lng, radius, type, keyword){
+function nearbysearch(callback, lat, lng, radius, category, keyword){
 	var request_url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=" 
-		+ lat + "," + lng + "&radius=" + radius + "&type=" + type + "&keyword=" + keyword + "&key=" + apikey.googleKey();
+		+ lat + "," + lng + "&radius=" + radius + "&type=" + category + "&keyword=" + keyword + "&key=" + apikey.googleKey();
 	request(request_url, function(error, response, body){
 		if (!error && response.statusCode == 200) {
             var result = JSON.parse(body);
@@ -56,7 +56,7 @@ app.get('/nearbysearch', function(req, res){
 	nearbysearch(function(err, data){ 
         if(err) return res.send(err);       
         res.send(JSON.stringify(data));
-    }, qdata.lat, qdata.lng, qdata.radius, qdata.type, qdata.keyword);
+    }, qdata.lat, qdata.lng, qdata.radius, qdata.category, qdata.keyword);
 })
 
 function nextPage(callback, token){
@@ -108,7 +108,7 @@ app.get('/search', function(req, res){
 		    	return JSON.stringify({"status": "ERROR", "msg": err});
 		    }
 		    res.send(JSON.stringify(data));
-	    }, qdata.lat, qdata.lng, qdata.radius, qdata.type, qdata.keyword);
+	    }, qdata.lat, qdata.lng, qdata.radius, qdata.category, qdata.keyword);
 	} else if(qdata.from == "customized"){
 		geocode(function(err, data){ 
 	        if(err) {
@@ -121,7 +121,7 @@ app.get('/search', function(req, res){
 			    	return JSON.stringify({"status": "ERROR", "msg": err});
 			    }
 			    res.send(JSON.stringify(data));
-	        }, data.lat, data.lng, qdata.radius, qdata.type, qdata.keyword)
+	        }, data.lat, data.lng, qdata.radius, qdata.category, qdata.keyword)
 	    }, qdata.location);
 	} else {
 		res.send(JSON.stringify({"status": "INVALID_PARAMETER"}));
